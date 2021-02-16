@@ -1,1 +1,164 @@
-java -jar ~/lib/jenkins-cli.jar -auth tjordan:w8112358 -s http://localhost:8080 create_job "$1"
+#!/bin/zsh
+export NAME="$( echo '$1' | sed 's#.*/\([^/]*\)\.git#\1#' )"
+sed 's#___URL___#$1#' << EOF
+<?xml version='1.1' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>Seed Job</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>URL</name>
+          <description></description>
+          <defaultValue></defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@4.5.2">
+    <configVersion>2</configVersion>
+    <userRemoteConfigs>
+      <hudson.plugins.git.UserRemoteConfig>
+        <url>___URL___</url>
+      </hudson.plugins.git.UserRemoteConfig>
+    </userRemoteConfigs>
+    <branches>
+      <hudson.plugins.git.BranchSpec>
+        <name>*/master</name>
+      </hudson.plugins.git.BranchSpec>
+    </branches>
+    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+    <submoduleCfg class="list"/>
+    <extensions/>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <authToken>phoenix</authToken>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.plugins.groovy.Groovy plugin="groovy@2.3">
+      <scriptSource class="hudson.plugins.groovy.StringScriptSource">
+        <command>node {
+
+    currentBuild.result = &quot;SUCCESS&quot;
+    sh &apos;date&apos;
+
+    try {
+
+    	timestamps {
+        
+       stage &apos;Pull Sourse Code&apos;
+         
+            echo &apos;Pull Source Code&apos;
+            git url: &quot;${URL}&quot;
+
+       stage &apos;Parse Message&apos;
+
+            def commit = sh(script: &apos;git rev-parse HEAD&apos;, returnStdout: true)
+            def message = sh(script: &quot;git log --format=%B -n 1 ${commit}&quot;, returnStdout: true)
+            def author = sh(script: &quot;git --no-pager show -s --format=&apos;%ae&apos; ${commit}&quot;, returnStdout: true)
+            def items = message.findAll(/[A-Z]{2,10}-[0-9]+/).unique()
+       
+       stage &apos;Generate Dockerfile&apos;
+        
+            echo &apos;Generate Dockerfile&apos;
+            sh &apos;~/bin/generate_dockerfile&apos;
+
+       stage &apos;Create Container&apos;
+            
+            echo &apos;Create Container&apos;
+            sh &quot;~/bin/g_create_container&quot;         
+
+       stage &apos;Run Container&apos;
+       
+            echo &apos;Run Container&apos;
+            def container = sh(script: &apos;~/bin/g_run_container&apos;, returnStdout: true)
+       
+       stage &apos;Change Resource Defintions&apos;
+       
+            echo &apos;Change Resource Defintions&apos;
+            sh &quot;~/bin/g_call_process_config ${container}&quot;
+        
+       stage &apos;Run Build&apos;
+
+            echo &apos;Run Build&apos;
+            sh &quot;~/bin/g_run_build ${container}&quot;
+
+       stage &apos;Take Screenshot&apos;
+
+            echo &apos;Take Screenshot&apos;
+            sh &quot;~/bin/g_call_take_screenshot ${container}&quot;
+
+       stage &apos;Run Sonar&apos;
+
+            echo  &apos;Run Sonar&apos;
+            sh &quot;~/bin/g_run_sonar ${container}&quot;
+
+       stage &apos;Run Fortify&apos;
+
+            echo &apos;Run Fortify&apos;
+            sh &quot;~/bin/g_run_fortify ${container}&quot;
+            
+       stage &apos;Update Jira&apos;
+
+            echo &apos;Update Jira&apos;
+            for (item in items) {
+            	sh &quot;~/bin/g_update_jira ${item}&quot;         
+            }
+
+       stage &apos;Archive Artifact&apos;
+
+            echo &apos;Archive Artifact&apos;
+            sh &quot;~/bin/g_call_sendto_artifactory ${container}&quot;
+
+       stage &apos;Extract Screenshot&apos;
+
+            echo &apos;Extract Screenshot&apos;
+            sh &quot;~/bin/g_extract_screenshot ${container}&quot;
+
+       stage &apos;Send Email&apos;
+
+            echo &apos;Send Email&apos;
+            sh &quot;~/bin/g_send_email ${author}&quot;
+            
+       stage &apos;Kill Container&apos;
+
+            echo &apos;Kill Container&apos;
+            sh &quot;docker stop ${container}&quot;
+            sh &quot;docker rm ${container}&quot;
+
+       stage &apos;Remove Directory&apos;
+
+            echo &apos;Remove Directory&apos;
+            deleteDir()
+
+        }
+      }
+
+    catch (err) {
+
+        echo &apos;Error&apos;
+    }
+}
+</command>
+      </scriptSource>
+      <groovyName>(Default)</groovyName>
+      <parameters></parameters>
+      <scriptParameters></scriptParameters>
+      <properties></properties>
+      <javaOpts></javaOpts>
+      <classPath></classPath>
+    </hudson.plugins.groovy.Groovy>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>
+EOF 
+) | java -jar ~/lib/jenkins-cli.jar -auth tjordan:w8112358 -s http://localhost:8080 create_job "$NAME" 
+
