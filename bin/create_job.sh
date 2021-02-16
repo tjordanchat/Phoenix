@@ -1,6 +1,10 @@
 #!/bin/zsh
-export NAME="$( echo '$1' | sed 's#.*/\([^/]*\)\.git#\1#' )"
-sed 's#___URL___#$1#' << EOF
+set -x
+NAME="$( echo $1 | sed 's#.*/\([^/]*\)\.git#\1#' )"
+
+echo "\$1 = $1"
+
+( sed "s#___URL___#$1#" << EOF
 <?xml version='1.1' encoding='UTF-8'?>
 <project>
   <actions/>
