@@ -1,10 +1,16 @@
 all: date snapshot_settings.xml release_settings.xml settings.xml
 
+pip:
+	curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+	python get-pip.py
+
 date:
 		date
 
 ~/pass.yml:
 	echo "Copy pass.yml.save to ~/pass.yml and edit it with actual values"
+	cp pass.yml.save ~/pass.yml
+	vi ~/pass.yml
 
 sonar.xml: sonar.xml.templ config.json
 	~/bin/mustache config.json sonar.xml.templ > ~/bin/sonar.xml
