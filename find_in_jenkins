@@ -1,0 +1,23 @@
+#!/bin/bash
+
+export URL=$1
+export COMMIT=$2
+
+export JENKINS_URL="$( shyaml get-value jenkins.url < ~/pass.yml )"
+export JENKINS_CLI="$( shyaml get-value jenkins.cli < ~/pass.yml)"
+
+java -jar "$JENKINS_CLI" -s "$JENKINS_URL"  list-jobs 2>/dev/null |
+while read project
+do
+        java -jar "$JENKINS_CLI" -s "$JENKINS_URL" list-jobs $project 2>/dev/null |
+        while read repo
+        do
+                echo -n "$project/$repo ";java -jar "$JENKINS_CLI" -s "$JENKINS_URL" get-job $project/$repo 2>/dev/null |
+                        ~/bin/xidel - -s -e //project/scm/userRemoteConfigs/hudson.plugins.git.UserRemoteConfig/url
+        done
+done
+
+# git branch --contains  "$2"
+# git --git-dir=<another_repo>/.git \
+#	format-patch -k -1 --stdout <commit SHA> | \
+#	git am -3 -k

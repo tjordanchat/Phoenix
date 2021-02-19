@@ -1,0 +1,9 @@
+#!/bin/bash
+
+export GITLAB_URL="$( shyaml get-value gitlab.url < ~/pass.yml )" 
+export GITLAB_USER="$( shyaml get-value gitlab.user < ~/pass.yml )" 
+export GITLAB_TOKEN="$( shyaml get-value gitlab.token < ~/pass.yml )" 
+
+curl --header "PRIVATE-TOKEN: $GITLAB_TOKEN" --header "SUDO: $GITLAB_USER" "$GITLAB_URL/api/v3/projects" 2>/dev/null |
+jq '.[] | {repo: .http_url_to_repo}' |
+jq '.repo'

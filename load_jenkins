@@ -1,0 +1,36 @@
+#/bin/bash
+
+set -x
+export JENKINS_URL="$( shyaml get-value jenkins.url < ~/pass.yml )"
+
+jcli () {
+	java -jar /var/cache/jenkins/war/WEB-INF/jenkins-cli.jar -s "$JENKINS_URL" $@ 2>/dev/null
+}
+process () {
+	GROUP=$1
+	REPO=$2
+	
+	jcli get-job $GROUP 2> /dev/null >/dev/null
+	RET=$?
+  if [ ! "$RET" = 0 ]
+  then
+  	jcli get-job Developer-Services 2>/dev/null | xsltproc --stringparam name "$GROUP" change_display_name.xsl - | jcli create-job "$GROUP" 2> /dev/null > /dev/null
+  fi
+}
+
+create_jobs () {
+	 GROUP=$1
+	 REPO=$2
+	 URL=$3
+	 
+	 jcli copy-job DEVOPS/std-build $GROUP/$REPO
+   jcli  get-job DEVOPS/std-build | xsltproc --stringparam name $URL new_change_url.xsl - | jcli update-job $GROUP/$REPO
+}
+
+~/bin/gitl | sed 's:"::g' | while read t
+do
+	REPO=$( basename $t | sed 's:"::;s:\.git$::' )
+	GROUP=$( basename $( dirname $t ) )
+	process $GROUP $REPO
+	create_jobs $GROUP $REPO $t
+done

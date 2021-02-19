@@ -13,7 +13,7 @@ date:
 	vi ~/pass.yml
 
 sonar.xml: sonar.xml.templ config.json
-	~/bin/mustache config.json sonar.xml.templ > ~/bin/sonar.xml
+	mustache config.json sonar.xml.templ > ~/bin/sonar.xml
 
 config.json: config.json.sh ~/pass.yml
 	bash -c ./config.json.sh > config.json
