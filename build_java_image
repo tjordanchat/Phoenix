@@ -1,0 +1,10 @@
+#!/bin/bash
+
+export DOCKER_USER="$(shyaml get-value docker.user < ~/pass.yml)"
+export DOCKER_PASSWD="$(shyaml get-value docker.password < ~/pass.yml)"
+
+TAG="$(basename $WORKSPACE )"
+
+docker rmi $TAG || true
+
+docker build --build-arg U=$DOCKER_USER --build-arg P=$DOCKER_PASSWD -t $TAG .

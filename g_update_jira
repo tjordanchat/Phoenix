@@ -1,0 +1,8 @@
+#!/bin/bash
+set -x
+export JIRA_USER="$(shyaml get-value jira.user < ~/pass.yml)"
+export JIRA_PASSWD="$(shyaml get-value jira.password < ~/pass.yml)"
+export JIRA_URL="$(shyaml get-value jira.url < ~/pass.yml)"
+
+export JIRA_ISSUE="$1"
+curl -u "$JIRA_USER:$JIRA_PASSWD" -k -X POST --data '{"body": "REPOSITORY '$JOB_NAME' built successfully"}' -H "Content-Type: application/json" $JIRA_URL/rest/api/2/issue/$JIRA_ISSUE/comment

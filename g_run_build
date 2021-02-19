@@ -1,0 +1,4 @@
+#!/bin/bash
+set -x
+
+docker exec -i "$1" bash -c "shyaml get-value build.bash < build.yml | bash"

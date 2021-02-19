@@ -1,0 +1,4 @@
+#!/bin/bash
+set -x
+
+docker exec -i "$1" bash -c "/usr/local/bin/g_process_config"

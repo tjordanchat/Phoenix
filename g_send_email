@@ -1,0 +1,47 @@
+#!/bin/bash
+
+export AUTHOR="$1"
+
+sendmail -t << EOT
+TO: user@company.com
+FROM: SDP-JENKINS  <jenkins@company.com>
+SUBJECT: JOB $JOB_NAME #$BUILD_NUMBER
+MIME-Version: 1.0
+Content-Type: multipart/related;boundary="XYZ"
+
+--XYZ
+Content-Type: text/html; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-15">
+</head>
+<body bgcolor="#ffffff" text="#000000">
+<img src="https://www.company/images/new-home/footer/logo.gif"/>
+<br>
+<br>
+<br>
+<font size="5">Jenkins Results - $JOB_NAME $AUTHOR - <a href="http://company.com:8080/job/SDP/job/app_springpc/job/master/$BUILD_NUMBER">#$BUILD_NUMBER</a></font>
+<br>
+<br>
+<br>
+<table>
+<tr>
+<td>
+<img src="cid:part1.06090408.01060107" alt="">
+<td> <a href="http://company.com:8081/artifactory/webapp/#/home">Artifactory</a>
+</tr></table>
+</body>
+</html>
+
+--XYZ
+Content-Type: image/jpeg;name="thumbnail.png"
+Content-Transfer-Encoding: base64
+Content-ID: <part1.06090408.01060107>
+Content-Disposition: inline; filename="thumbnail.png"
+
+$(base64 thumbnail.png)
+--XYZ--
+EOT
+

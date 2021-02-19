@@ -1,0 +1,20 @@
+#!/bin/bash
+set -x
+
+export IMAGE="$(echo $BUILD_TAG | sed 's/[^-]*-//;s/-[^-]*$//' | tr '[A-Z]' '[a-z]')"
+
+mkdir -p .sdp
+docker rmi $IMAGE
+docker build -t $IMAGE .
+CONTAINER="$( docker run -itd $IMAGE bash )"
+docker cp $CONTAINER:/root/.sdp/artifacts .sdp/artifacts
+cat .sdp/artifacts | while read art
+do
+	if [ -z "$art" ]
+	then
+	   docker cp "$CONTAINER:$art" "./$( basename $art )"
+  fi
+done
+docker cp "$CONTAINER:/root/screenshot.png" .
+docker stop "$CONTAINER"
+docker rm "$CONTAINER"

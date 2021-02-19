@@ -1,0 +1,32 @@
+#!/bin/bash
+set -x
+
+export ART_USER="$(shyaml get-value artifactory.user < pass.yml)"
+export ART_PASSWD="$(shyaml get-value artifactory.passwd < pass.yml)"
+export ART_USER_PASS="$ART_USER:$ART_PASSWD"
+export ART="$( shyaml get-value build.artifacts < build.yml )"
+export ART_URL="$(shyaml get-value artifactory.url < pass.yml)"
+
+mkdir -p ~/.sdp
+echo "$( readlink -f $( shyaml get-value test.artifacts  < build.yml ) )" > ~/.sdp/artifacts
+
+ls $ART | while read t
+do
+  TT=$( echo $t | sed 's#^\./##' )
+  cd $( dirname $TT )
+  NAME="$( basename $TT )"
+  PREF="${NAME%.*}"
+  SUFIX="${NAME##*.}"
+  FQUAL="$PREF-$BRANCH-SNAPSHOT.$SUFIX"
+  mv $NAME $FQUAL
+  SHA1=$( sha1sum $FQUAL | awk '{print $1}' )
+  curl -k -v --user "$ART_USER_PASS" --request DELETE "$ART_URL/artifactory/libs-snapshot-local/$PROJECT/$REPO/$BRANCH-SNAPSHOT/$FQUAL"
+  curl -k -v --user "$ART_USER_PASS" --data-binary @$FQUAL -X PUT "$ART_URL/artifactory/libs-snapshot-local/$PROJECT/$REPO/$BRANCH-SNAPSHOT/$FQUAL" | jq .uri >> /tmp/artifacts
+  if [ "$SUFIX" = war ]
+  then
+  	/usr/local/bin/pom.xml.sh > "pom-$BRANCH-SNAPSHOT.xml"
+  	curl -k -v --user "$ART_USER_PASS" --request DELETE "$ART_URL/artifactory/libs-snapshot-local/$PROJECT/$REPO/$BRANCH-SNAPSHOT/$PREF-$BRANCH-SNAPSHOT.pom" 
+  	curl -k -v --user "$ART_USER_PASS" --data-binary @pom-$BRANCH-SNAPSHOT.xml -X PUT "$ART_URL/artifactory/libs-snapshot-local/$PROJECT/$REPO/$BRANCH-SNAPSHOT/$PREF-$BRANCH-SNAPSHOT.pom"
+  fi
+  cd -
+done

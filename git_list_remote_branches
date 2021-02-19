@@ -1,0 +1,12 @@
+#!/bin/bash
+
+export GITLAB_USER="$( shyaml get-value gitlab.user < ~/pass.yml )"
+export GITLAB_PASSWD="$( shyaml get-value gitlab.password < ~/pass.yml )"
+
+sed 's#"##g' | while read remote
+do
+  git ls-remote --heads "$remote" | awk '{print $2}' | while read branch
+  do
+  	basename $branch | sed "s#^#$remote #"
+  done
+done

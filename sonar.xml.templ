@@ -1,0 +1,14 @@
+        <profile>
+            <id>sonar</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+            	<sonar.jdbc.url>{{#sonar}}{{dbConnStr}}{{/sonar}}</sonar.jdbc.url>
+            	<sonar.jdbc.username>{{#sonar}}{{user}}{{/sonar}}</sonar.jdbc.username>
+            	<sonar.jdbc.password>{{#sonar}}{{password}}{{/sonar}}</sonar.jdbc.password>
+              <sonar.host.url>
+                  {{#sonar}}{{{url}}}{{/sonar}}
+              </sonar.host.url>
+            </properties>
+        </profile>

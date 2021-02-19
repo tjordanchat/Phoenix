@@ -1,0 +1,19 @@
+#!/bin/bash
+set -x
+
+env
+
+export REPO_PART="$( basename $(echo $REPO_URL | sed 's#^[^@]*@##;s#\.git$##;s#:#/#') )"
+export ART_URL="$(shyaml get-value artifactory.url < ~/pass.yml)"
+
+sed -i '/<profiles>/r /tmp/sonar.xml' /tmp/settings.xml
+cat /tmp/settings.xml > $MAVEN_HOME/conf/settings.xml
+
+xsltproc --stringparam name "$REPO_PART" --stringparam arturl "$ART_URL" --stringparam groupId "$PROJECT" --stringparam artifactId "$REPO_PART" --stringparam version "$BRANCH" /tmp/newAddName.xsl pom.xml > /tmp/pom.xml
+cat pom.xml > /tmp/pompom.xml
+cat /tmp/pom.xml > pom.xml
+
+shyaml get-value artifactory.certificate1  < ~/pass.yml > /tmp/file.crt
+echo >> /tmp/file.crt
+shyaml get-value artifactory.certificate2  < ~/pass.yml >> /tmp/file.crt
+keytool -import -alias ART_DEV -keystore $JAVA_HOME/jre/lib/security/cacerts -trustcacerts -file /tmp/file.crt < /tmp/keytool_answer_file

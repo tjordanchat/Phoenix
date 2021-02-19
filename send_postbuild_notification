@@ -1,0 +1,76 @@
+#!/bin/bash
+
+export PROJECT="$( basename $( dirname $( dirname $WORKSPACE ) ) )"
+export REPO="$( basename $( dirname $WORKSPACE ) )"
+export BRANCH="$( basename $WORKSPACE )"
+export BUILD_NO="$BUILD_NUMBER"
+export TEST_RESULTS=".test_results"
+export COMMIT="$( git rev-parse HEAD )"
+#export EMAIL="$( git log --format=%ce -n q $COMMIT  )"
+export EMAIL="jenkins"
+
+mutt -e 'set content_type=text/html' "npesdptest@tdameritrade-pte.com" -s "Jenkins Results - $JOB_NAME - #$BUILD_NUMBER" -a "screenshot.png" <<EOF
+<html>
+<body>
+<table border="1">
+<tr>
+<td>JIRA Ticket</td>
+<td><a href="https://jira.company.com/browse/$ISSUE?jql=project%20%3D%XXXXXXXXAND%20resolution%20%3D%20Unresolved%20AND%20priority%20%3D%20Unprioritized%20ORDER%20BY%20key%20DESC">SDP/app_springpc</a></td>
+<td>8 sec</td>
+</tr>
+<tr>
+<td>Generate Container</td>
+<td><a href="http://company.com:9999"/></td>
+<td>2 min 14 sec</td>
+</tr>
+<tr>
+<td>Pull from Bitbucket</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Build Artifacts</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Run Sonar</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Run Fortify</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Run Smoke Tests</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Run Smoke Tests</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Update Artifactory</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Update JIRA Ticket</td>
+<td><a href="https://jira.company.com/browse/$ISSUE?jql=project%20%3D%20SDP%20AND%20resolution%20%3D%20Unresolved%20AND%20priority%20%3D%20Unprioritized%20ORDER%20BY%20key%20DESC">SDP/app_springpc</a></td>
+<td>4 sec</td>
+</tr>
+</table>
+</body>
+</html>
+Build Complete
+Jenkins Results - $JOB_NAME - #$BUILD_NUMBER  $BUILD_URL
+<br>
+Image screenshot.png attached.
+</body>
+</html>
+EOF
+

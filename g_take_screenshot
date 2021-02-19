@@ -1,0 +1,27 @@
+#!/bin/bash
+set -x
+
+cat <<EOF
+Xvfb :1 -screen 0 1280x960x24 &
+XPID=\$!
+sleep 10
+
+$( shyaml get-value screenshot.server  < ~/build.yml ) &
+TPID=\$!
+sleep 30
+
+$( shyaml get-value screenshot.client < ~/build.yml ) &
+FPID=\$!
+
+xterm -geometry 50x10-0-0 -hold -e "figlet -f banner '# $BUILD_NO'" &
+RPID=\$!
+sleep 30
+
+xclock -geometry 200x200+680+760  &
+CPID=\$!
+sleep 10
+
+import -window root -crop 1264x948+0+0 -resize 800x600 -quality 95 screenshot.png
+import -window root -crop 1264x948+0+0 -resize 280x210 -quality 95 thumbnail.png
+kill -9 \$CPID \$FPID \$XPID \$TPID \$RPID
+EOF

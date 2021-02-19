@@ -1,0 +1,8 @@
+#!/bin/bash
+set -x
+export FORTIFY_USER="$(shyaml get-value fortify.user < ~/pass.yml)"
+export FORTIFY_PASSWD="$(shyaml get-value fortify.password < ~/pass.yml)"
+export FORTIFY_URL="$(shyaml get-value fortify.url < ~/pass.yml)"
+export FORTIFY_TOKEN="$(shyaml get-value fortify.token < ~/pass.yml)"
+
+docker exec -i "$1" bash -c "fortifyclient token -gettoken $FORTIFY_TOKEN -daysToLive 365 -url $FORTIFY_URL -user $FORTIFY_USER -password $FORTIFY_PASSWD"
