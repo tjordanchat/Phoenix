@@ -97,13 +97,13 @@ config.json: config.json.sh ~/pass.yml
 	cp build_java_image ~/bin
 
 settings.xml: settings.xml.templ config.json sonar.xml ~/bin/build_artifacts ~/bin/generate_dockerfile ~/bin/build_dockerfile ~/bin/load_jenkins ~/bin/gitl ~/bin/build_base_image ~/bin/find_in_jenkins ~/bin/dispatch_jenkins_job ~/bin/dispatch_jenkins_job ~/bin/send_postbuild_notification  ~/bin/build_java_image ~/bin/get_build_tag  ~/bin/g_create_container ~/bin/g_run_container ~/bin/g_run_build ~/bin/g_run_sonar ~/bin/g_process_config  ~/bin/g_call_process_config ~/bin/pipeline_script.groovy ~/bin/g_run_fortify  ~/bin/g_update_jira ~/bin/g_call_sendto_artifactory ~/bin/g_sendto_artifactory ~/bin/g_take_screenshot ~/bin/g_call_take_screenshot ~/bin/g_send_email ~/bin/g_extract_screenshot ~/bin/git_list_remote_branches
-	~/bin/mustache config.json settings.xml.templ > ~/bin/settings.xml
+	/usr/local/bin/mustache config.json settings.xml.templ > ~/bin/settings.xml
 
 release_settings.xml: release_settings.xml.templ config.json sonar.xml ~/bin/build_artifacts ~/bin/generate_dockerfile ~/bin/build_dockerfile ~/bin/load_jenkins ~/bin/gitl ~/bin/build_base_image ~/bin/find_in_jenkins
-	~/bin/mustache config.json release_settings.xml.templ > ~/bin/release_settings.xml
+	/usr/local/bin/mustache config.json release_settings.xml.templ > ~/bin/release_settings.xml
 
 snapshot_settings.xml: snapshot_settings.xml.templ config.json sonar.xml ~/bin/build_artifacts ~/bin/generate_dockerfile ~/bin/build_dockerfile ~/bin/load_jenkins ~/bin/gitl ~/bin/build_base_image ~/bin/find_in_jenkins
-	~/bin/mustache config.json snapshot_settings.xml.templ > ~/bin/snapshot_settings.xml
+	/usr/local/bin/mustache config.json snapshot_settings.xml.templ > ~/bin/snapshot_settings.xml
 
 clean:
 	rm -f snapshot_settings.xml config.json sonar.xml ~/bin/gitl ~/bin/build_dockerfile
