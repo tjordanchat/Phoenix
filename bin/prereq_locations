@@ -9,4 +9,5 @@ which yq
 which jq
 which docker
 which xsltproc
+which graphviz
 
