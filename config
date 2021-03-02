@@ -1,0 +1,7 @@
+#!/bin/bash
+
+which node >/dev/null; rc="$?"
+if [ "$rc" -eq 0 ]
+then
+	echo brew install node
+fi
