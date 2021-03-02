@@ -1,0 +1,12 @@
+#!/bin/bash
+
+which python
+which sonar
+which pip
+which node
+which npm
+which yq
+which jq
+which docker
+which xsltproc
+
