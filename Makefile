@@ -29,5 +29,5 @@ endif
 
 all:
 	@echo $(OSFLAG)
-	include "Makefiles/$(OSFLAG).make"
+	make "Makefiles/$(OSFLAG).make"
 
