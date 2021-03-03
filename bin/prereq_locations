@@ -1,13 +1,11 @@
 #!/bin/bash
 
-which python
-which sonar
-which pip
-which node
-which npm
-which yq
-which jq
-which docker
-which xsltproc
-which graphviz
+ind="   "
+echo prereq:
+for req in python sonar pip node npm yq jq docker xsltproc dot
+do
+	l=$(which "$req")
+	echo "$ind $req:"
+	echo "$ind $ind location: $l"
+done
 
