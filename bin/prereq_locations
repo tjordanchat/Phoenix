@@ -1,11 +1,12 @@
 #!/bin/bash
 
+fn="./Locations/$1"
 ind="   "
-echo prereq:
+echo prereq: > $fn
 for req in python sonar pip node npm yq jq docker xsltproc dot
 do
 	l=$(which "$req")
-	echo "$ind $req:"
-	echo "$ind $ind location: $l"
+	echo "$ind $req:" >> $fn
+	echo "$ind $ind location: $l" >> $fn
 done
 
