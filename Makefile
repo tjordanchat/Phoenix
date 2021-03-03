@@ -1,4 +1,4 @@
-OSFLAG 				:=
+OSFLAG := ""
 ifeq ($(OS),Windows_NT)
 	OSFLAG := WIN32
 	ifeq ($(PROCESSOR_ARCHITECTURE),AMD64)
@@ -31,8 +31,9 @@ all:
 	@echo $(OSFLAG)
 	make "./OS_Makefiles/$(OSFLAG).make"
 
-locations: 
+locations: FORCE
 	@echo $(OSFLAG)
 	./bin/prereq_locations "$(OS_FLAG)"
 
+FORCE:
 
