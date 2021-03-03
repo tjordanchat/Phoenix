@@ -31,7 +31,7 @@ all:
 	@echo $(OSFLAG)
 	make "OS_Makefiles/$(OSFLAG).make"
 
-locations:
-	./bin/prereq_locations "$OS_FLAG"
+locations: $(OS_FLAG)
+	./bin/prereq_locations "$(OS_FLAG)"
 
 
