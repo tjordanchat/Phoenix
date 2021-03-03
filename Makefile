@@ -29,5 +29,5 @@ endif
 
 all:
 	@echo $(OSFLAG)
-	make "Makefiles/$(OSFLAG).make"
+	make "OS_Makefiles/$(OSFLAG).make"
 
