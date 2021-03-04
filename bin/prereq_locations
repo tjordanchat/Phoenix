@@ -1,6 +1,7 @@
 #!/bin/bash
 
 fn="./Locations/$1"
+echo "-->$1<--"
 ind="   "
 echo prereq: > $fn
 for req in python sonar pip node npm yq jq docker xsltproc dot

@@ -28,12 +28,12 @@ else
 endif
 
 all:
-	@echo $(OSFLAG)
+	@echo "-->$(OSFLAG)<--"
 	make "./OS_Makefiles/$(OSFLAG).make"
 
 locations: FORCE
-	@echo $(OSFLAG)
-	./bin/prereq_locations "$(OS_FLAG)"
+	@echo "-->$(OSFLAG)<--"
+	./bin/prereq_locations "$(OSFLAG)"
 
 FORCE:
 
