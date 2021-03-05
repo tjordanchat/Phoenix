@@ -1,3 +1,5 @@
+COMMANDS := python sonar pip node npm yq jq docker xsltproc dot
+
 OSFLAG := ""
 ifeq ($(OS),Windows_NT)
 	OSFLAG := WIN32

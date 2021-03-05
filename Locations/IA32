@@ -1,0 +1,21 @@
+prereq:
+    python:
+        location: /usr/bin/python
+    sonar:
+        location: /usr/local/bin/sonar
+    pip:
+        location: /usr/local/bin/pip
+    node:
+        location: /usr/local/bin/node
+    npm:
+        location: /usr/local/bin/npm
+    yq:
+        location: /usr/local/bin/yq
+    jq:
+        location: /usr/local/bin/jq
+    docker:
+        location: /usr/local/bin/docker
+    xsltproc:
+        location: /usr/bin/xsltproc
+    dot:
+        location: /usr/local/bin/dot

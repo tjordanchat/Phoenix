@@ -1,4 +1,5 @@
 #!/bin/bash
+# This script is run after all prereqs are installed.
 
 fn="./Locations/$1"
 echo "-->$1<--"
