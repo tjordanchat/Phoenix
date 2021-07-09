@@ -1,0 +1,13 @@
+#!/bin/bash
+
+export JENKINS_USERID="$( shyaml get-value jenkins.user < ~/pass.yml )"
+export JENKINS_PASSWD="$( shyaml get-value jenkins.password < ~/pass.yml )"
+export JENKINS_URL="$( shyaml get-value jenkins.url < ~/pass.yml )"
+
+export PROJECT="$1"
+export REPO="$2"
+export BRANCH="$3"
+export NAME="$4"
+export BUILD_TYPE="$5"
+
+curl --user "$JENKINS_USERID:$JENKINS_PASSWD" "http://$JENKINS_URL/$PROJECT/$REPO/$BRANCH/build?build_type=$BUILD_TYPE"

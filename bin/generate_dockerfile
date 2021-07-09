@@ -1,0 +1,39 @@
+#!/bin/bash
+
+RAND=$$
+REPO="$(basename $(dirname $WORKSPACE ) )"
+PROJECT="$(basename $( dirname $( dirname $WORKSPACE ) ) )"
+ENVIR="$( shyaml get-value env < build.yml )"
+
+if [ "$ENVIR" = "" ]
+then
+        color red "ERROR: No Environment specified."
+        exit 1
+fi
+
+git rev-parse HEAD > /tmp/1.$RAND
+git  branch -av --abbrev=100 | awk '{print $2, $1}' | sort > /tmp/2.$RAND
+BRANCH="$( join /tmp/1.$RAND /tmp/2.$RAND | awk '{print $2}' | sed 's:remotes/origin/::' | sed -n 1p )"
+
+cp ~jenkins/pass.yml .
+
+bash -c 'cat > Dockerfile' <<EOF
+FROM $ENVIR
+
+COPY ./ ./
+
+ENV PROJECT    "$PROJECT"
+ENV REPO       "$REPO"
+ENV REPO_URL   "$(git config --get remote.origin.url)"
+ENV COMMIT     "$(git rev-parse HEAD)"
+ENV BUILD_NO   "$BUILD_NUMBER"
+ENV BRANCH     "$BRANCH"
+
+RUN \
+   /bin/bash
+EOF
+#   /usr/local/bin/build_artifacts "$build_type"
+#EOF
+
+rm /tmp/1.$RAND
+rm /tmp/2.$RAND

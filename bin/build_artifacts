@@ -1,0 +1,60 @@
+#!/bin/bash
+set -x
+
+export ART_USER="$(shyaml get-value artifactory.user < ~/pass.yml)"
+export ART_PASSWD="$(shyaml get-value artifactory.passwd < ~/pass.yml)"
+export ART_USER_PASS="$ART_USER:$ART_PASSWD"
+export JIRA_USER="$(shyaml get-value jira.user < ~/pass.yml)"
+export JIRA_PASSWD="$(shyaml get-value jira.passwd < ~/pass.yml)"
+export JIRA_URL="$(shyaml get-value jira.url < ~/pass.yml)"
+export JIRA_USER_PASS="$JIRA_USER:$JIRA_PASSWD"
+export ART="$( shyaml get-value build.artifacts < ~/build.yml )"
+export SCREENSHOT="$( shyaml get-value test.screenshot < ~/build.yml )"
+export REPO_PART="$( basename $(echo $REPO_URL | sed 's#^[^@]*@##;s#\.git$##;s#:#/#') )"
+export ART_URL="$(shyaml get-value artifactory.url < ~/pass.yml)"
+
+mkdir -p ~/.sdp
+sed -i '/<profiles>/r /tmp/sonar.xml' /tmp/settings.xml
+cat /tmp/settings.xml > $MAVEN_HOME/conf/settings.xml
+
+xsltproc --stringparam name "$REPO_PART" --stringparam arturl "$ART_URL" --stringparam groupId "$PROJECT" --stringparam artifactId "$REPO_PART" --stringparam version "$BRANCH" /tmp/newAddName.xsl pom.xml > /tmp/pom.xml
+cat pom.xml > /tmp/pompom.xml
+cat /tmp/pom.xml > pom.xml
+
+shyaml get-value artifactory.certificate1  < ~/pass.yml > /tmp/file.crt
+echo >> /tmp/file.crt
+shyaml get-value artifactory.certificate2  < ~/pass.yml >> /tmp/file.crt
+keytool -import -alias ART_DEV -keystore $JAVA_HOME/jre/lib/security/cacerts -trustcacerts -file /tmp/file.crt < /tmp/keytool_answer_file
+shyaml get-value build.bash < build.yml | bash
+shyaml get-value sonar.bash < build.yml | bash
+shyaml get-value test.bash  < build.yml | bash
+echo "$( readlink -f $( shyaml get-value test.artifacts  < ~/build.yml ) )" > ~/.sdp/artifacts
+
+ls $ART | while read t
+do
+  TT=$( echo $t | sed 's#^\./##' )
+  cd $( dirname $TT )
+  NAME="$( basename $TT )"
+  PREF="${NAME%.*}"
+  SUFIX="${NAME##*.}"
+  FQUAL="$PREF-$BRANCH-SNAPSHOT.$SUFIX"
+  mv $NAME $FQUAL
+  SHA1=$( sha1sum $FQUAL | awk '{print $1}' )
+  curl -k -v --user "$ART_USER_PASS" --request DELETE "$ART_URL/artifactory/libs-snapshot-local/$PROJECT/$REPO/$BRANCH-SNAPSHOT/$FQUAL"
+  curl -k -v --user "$ART_USER_PASS" --data-binary @$FQUAL -X PUT "$ART_URL/artifactory/libs-snapshot-local/$PROJECT/$REPO/$BRANCH-SNAPSHOT/$FQUAL" | jq .uri >> /tmp/artifacts
+  if [ "$SUFIX" = war ]
+  then
+  	/usr/local/bin/pom.xml.sh > "pom-$BRANCH-SNAPSHOT.xml"
+  	curl -k -v --user "$ART_USER_PASS" --request DELETE "$ART_URL/artifactory/libs-snapshot-local/$PROJECT/$REPO/$BRANCH-SNAPSHOT/$PREF-$BRANCH-SNAPSHOT.pom" 
+  	curl -k -v --user "$ART_USER_PASS" --data-binary @pom-$BRANCH-SNAPSHOT.xml -X PUT "$ART_URL/artifactory/libs-snapshot-local/$PROJECT/$REPO/$BRANCH-SNAPSHOT/$PREF-$BRANCH-SNAPSHOT.pom"
+  fi
+  cd -
+done
+
+/usr/local/bin/gen_json_4_deploy > /tmp/json_4_deploy.json
+mkdir /tmp/deploy
+/usr/local/node_modules/mustache/bin/mustache /tmp/json_4_deploy.json /tmp/xldeploy_pom.xml.templ > /tmp/deploy/pom.xml
+/usr/local/node_modules/mustache/bin/mustache /tmp/json_4_deploy.json /tmp/xldeploy_settings.xml.templ > /tmp/deploy/settings.xml
+curl -u "$JIRA_USER_PASS" -k -X POST --data '{"body": "REPOSITORY '$REPO_PART' built successfully"}' -H "Content-Type: application/json"   https://jira.company.com/rest/api/2/issue/SDP-1/comment
+#curl -D- -u "$JIRA_USER_PASS" -k -X POST -H "X-Atlassian-Token: nocheck" -F "file=@$SCREENSHOT"  https://jira.company.com/rest/api/2/issue/SDP-1/attachments
+#curl -X PUT -u admincmart1 "http://artifactory.company.com:8081/artifactory/api/build" -H "Content-Type: application/json" --upload-file build.json

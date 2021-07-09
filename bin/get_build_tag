@@ -1,0 +1,3 @@
+#!/bin/bash
+
+echo $BUILD_TAG | sed 's/[^-]*-//;s/-[^-]*$//' | tr '[A-Z]' '[a-z]'

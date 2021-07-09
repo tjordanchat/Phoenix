@@ -1,0 +1,22 @@
+#!/bin/bash
+
+export ART_USER="$( shyaml get-value artifactory.user < ~/pass.yml )"
+export ART_PASSWD="$( shyaml get-value artifactory.passwd < ~/pass.yml )"
+export ART_URL="$( shyaml get-value artifactory.url < ~/pass.yml )"
+export export DOCKER_OPTS+=" --insecure-registry $ART_URL"
+export DOCKER_USER="$( shyaml get-value docker.user < ~/pass.yml )"
+export DOCKER_PASSWD="$( shyaml get-value docker.password < ~/pass.yml )"
+export DOCKER_EMAIL="$( shyaml get-value docker.email < ~/pass.yml )"
+
+TAG="$(basename $WORKSPACE )"
+
+docker login -u $DOCKER_USER -p $DOCKER_PASSWD -e $DOCKER_EMAIL
+
+docker rmi $TAG || true
+
+cp ~/bin/snapshot_settings.xml .
+cp ~/bin/release_settings.xml .
+cp ~/bin/settings.xml .
+cp ~/bin/sonar.xml .
+
+docker build -t $TAG --build-arg U=$DOCKER_USER --build-arg P=$DOCKER_PASSWD --build-arg A=$ART_URL .

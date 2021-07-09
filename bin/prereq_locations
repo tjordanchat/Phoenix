@@ -1,0 +1,14 @@
+#!/bin/bash
+# This script is run after all prereqs are installed.
+
+fn="./Locations/$1"
+echo "-->$1<--"
+ind="   "
+echo prereq: > $fn
+for req in python sonar pip node npm yq jq docker xsltproc dot
+do
+	l=$(which "$req")
+	echo "$ind $req:" >> $fn
+	echo "$ind $ind location: $l" >> $fn
+done
+
